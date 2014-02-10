@@ -3,9 +3,12 @@
     %title {{title}}
     %link{rel:"stylesheet", href:"/vendor/bootstrap/css/bootstrap.css"}
     %link{rel:"stylesheet", href:"/stylesheet.css"}
+    %link{rel:"stylesheet", href:"http://fonts.googleapis.com/css?family=PT+Serif"}
   %body
+    = haml :navigation
     %ui-view
-    %script{src:"/vendor/jquery-2.0.3.js"}
+    //%script{src:"/vendor/jquery-2.0.3.js"}
     %script{src:"/vendor/angular.js"}
-    %script{src:"/vendor/angular-ui-router-0.2.7.js"}
+    %script{src:"/vendor/angular-ui-router-0.2.8.js"}
+    %script{src:"/vendor/angular-ui.js"}
     %script{src:"/javascript.js"}

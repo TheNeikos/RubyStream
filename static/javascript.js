@@ -5,6 +5,96 @@
     return;
   }
 
-  angular.module("RubyStream", ['ui.router']);
+  angular.module("RubyStream", ['ui.router', 'ui.bootstrap']).config([
+    "$stateProvider", "$locationProvider", function($stateProvider, $locationProvider) {
+      $stateProvider.state('viewing', {
+        url: '/',
+        templateUrl: '/view/viewing'
+      }).state('viewing.user', {
+        url: 'user/',
+        abstract: true
+      }).state('viewing.user.login', {
+        url: 'login',
+        onEnter: [
+          "$stateParams", "$state", "$modal", "CurrentUser", function($stateParams, $state, $modal, CurrentUser) {
+            return $modal.open({
+              templateUrl: '/view/user_login',
+              controller: [
+                '$scope', function($scope) {
+                  $scope.user = {
+                    name: "",
+                    password: ""
+                  };
+                  $scope.dismiss = function() {
+                    return $scope.$dismiss();
+                  };
+                  return $scope.login = function() {
+                    return CurrentUser.login($scope.user).then(function() {
+                      return $scope.dismiss();
+                    }, function(error) {
+                      return $scope.error = error;
+                    });
+                  };
+                }
+              ],
+              keyboard: true
+            }).result["finally"](function(result) {
+              return $state.transitionTo('viewing');
+            });
+          }
+        ]
+      }).state('viewing.playlist', {
+        url: 'playlist/',
+        templateUrl: '/view/playlist_layout',
+        abstract: true
+      }).state('viewing.playlist.index', {
+        url: '',
+        templateUrl: '/view/playlist_index'
+      }).state('viewing.playlist.new', {
+        url: 'new/'
+      });
+      return $locationProvider.html5Mode(true);
+    }
+  ]).run([
+    "CurrentUser", "$rootScope", function(cu, $rootScope) {
+      return $rootScope.currentUser = cu;
+    }
+  ]).factory("CurrentUser", [
+    "$http", "$q", function($http, $q) {
+      var user;
+      user = {};
+      user.loggedIn = function() {
+        return user.data != null;
+      };
+      user.login = function(data) {
+        var deferred;
+        deferred = $q.defer();
+        console.log(data);
+        $http.post('/user/login', data).success(function(data) {
+          if (data.error) {
+            return deferred.reject(data.error);
+          } else {
+            user.data = data;
+            return deferred.resolve();
+          }
+        });
+        return deferred.promise;
+      };
+      user.isAdmin = function() {
+        return user.loggedIn() && user.data.is_admin;
+      };
+      user.isModerator = function() {
+        return user.loggedIn() && user.data.is_moderator;
+      };
+      return user;
+    }
+  ]).directive("navbarUserStatus", [
+    "CurrentUser", function(CurrentUser) {
+      return {
+        templateUrl: "/view/navbarUserStatus",
+        link: function(scope, element, attr) {}
+      };
+    }
+  ]);
 
 }).call(this);

@@ -1,0 +1,14 @@
+.navbar.navbar-inverse.navbar-fixed-top{role:"navigation"}
+  .container
+    .navbar-header
+      %a.navbar-brand{href:"/", :'data-ytta-id' => "-"} 
+        W
+        %span> o
+        EFul Stream
+
+    %ul.nav.navbar-nav
+      %li
+        %a{:'ui-sref' => "viewing.playlist.index"} Playlists
+
+    %ul.nav.navbar-nav.navbar-right
+      %li{:"navbar-user-status" => true}

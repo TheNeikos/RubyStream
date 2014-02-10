@@ -1,0 +1,25 @@
+#viewingroom
+  #video
+    %iframe{src:"//www.youtube.com/embed/IXZ9J_0aPMw",frameborder:"0",allowfullscreen: true}
+  #chat
+    %ul
+      - 40.times do |i|
+        %li.message.clearfix
+          .name<
+            = i%2 == 0 ? "Luminescence" : "Neikos"
+          .message
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+    .chat-input
+      %textarea{:'chat-input' => true}
+  #playlist
+    .header
+      %h2 Next up playing...
+    .preview
+      %img{src:"http://img.youtube.com/vi/IXZ9J_0aPMw/hqdefault.jpg"}
+      .time 15:12
+    .title
+      MLP - Season 5 Episode 6 "The Wedding of the Dragons"
+    .author
+      DaPonyUploadz
+    %img.next{src:"http://img.youtube.com/vi/IXZ9J_0aPMw/hqdefault.jpg"}
+  %ui-view

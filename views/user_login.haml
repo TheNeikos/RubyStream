@@ -1,0 +1,19 @@
+.modal-header
+  %button.close{type:"button",:'ng-click' => 'dismiss()', :'aria-hidden' => true} &times;
+  %h4.modal-title Logging In
+
+.modal-body
+  .alert.alert-warning{:'ng-show' => 'error'}
+    {{error}}
+  %form.form-horizontal
+    .form-group
+      %label.col-sm-2.control-label{:for => "username"} Username
+      .col-sm-10
+        %input#username.form-control{type:"text",placeholder:"Username", :'ng-model' => 'user.name', :autofocus => true}
+    .form-group
+      %label.col-sm-2.control-label{:for => "password"} Password
+      .col-sm-10
+        %input#password.form-control{type:"password",placeholder:"Password", :'ng-model' => 'user.password'}
+.modal-footer
+  %button.btn.btn-default{:'ng-click' => 'dismiss()'} Close
+  %button.btn.btn-primary{:'ng-click' => 'login()'} Login
