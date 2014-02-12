@@ -5,7 +5,7 @@
     return;
   }
 
-  angular.module("RubyStream", ['ui.router', 'ui.bootstrap']).config([
+  angular.module("RubyStream", ['ui.router', 'ui.bootstrap', 'RubyStream.Services', 'RubyStream.Directives', 'RubyStream.Controllers']).config([
     "$stateProvider", "$locationProvider", function($stateProvider, $locationProvider) {
       $stateProvider.state('viewing', {
         url: '/',
@@ -49,17 +49,32 @@
         abstract: true
       }).state('viewing.playlist.index', {
         url: '',
-        templateUrl: '/view/playlist_index'
+        templateUrl: '/view/playlist_index',
+        controller: 'PlaylistIndex'
       }).state('viewing.playlist.new', {
-        url: 'new/'
+        url: 'new/',
+        templateUrl: '/view/playlist_new',
+        controller: 'PlaylistNew'
+      }).state('viewing.playlist.view', {
+        url: ':id',
+        templateUrl: '/view/playlist_view',
+        controller: 'PlaylistView'
       });
       return $locationProvider.html5Mode(true);
     }
   ]).run([
     "CurrentUser", "$rootScope", function(cu, $rootScope) {
-      return $rootScope.currentUser = cu;
+      $rootScope.currentUser = cu;
+      return cu.autoLogin();
     }
-  ]).factory("CurrentUser", [
+  ]).filter('time', function() {
+    return function(input) {
+      input = parseInt(input, 10);
+      return "" + (Math.floor(input / 60)) + " Minutes " + (input % 60) + " Seconds";
+    };
+  });
+
+  angular.module("RubyStream.Services", []).factory("CurrentUser", [
     "$http", "$q", function($http, $q) {
       var user;
       user = {};
@@ -69,16 +84,31 @@
       user.login = function(data) {
         var deferred;
         deferred = $q.defer();
-        console.log(data);
-        $http.post('/user/login', data).success(function(data) {
+        $http.post('/api/user/login', data).success(function(data) {
           if (data.error) {
             return deferred.reject(data.error);
           } else {
             user.data = data;
+            localStorage['user_id'] = data.id;
+            localStorage['user_authkey'] = data.login_hash;
             return deferred.resolve();
           }
         });
         return deferred.promise;
+      };
+      user.autoLogin = function() {
+        if (localStorage['user_id']) {
+          return $http.post('/api/user/auth', {
+            'user_id': localStorage['user_id'],
+            'user_authkey': localStorage['user_authkey']
+          }).success(function(data) {
+            if (data) {
+              user.data = data;
+              localStorage['user_id'] = data.id;
+              return localStorage['user_authkey'] = data.login_hash;
+            }
+          });
+        }
       };
       user.isAdmin = function() {
         return user.loggedIn() && user.data.is_admin;
@@ -86,14 +116,76 @@
       user.isModerator = function() {
         return user.loggedIn() && user.data.is_moderator;
       };
+      user.post = function(url, data) {
+        if (!user.loggedIn()) {
+          return;
+        }
+        data.user_id = user.data.id;
+        data.user_authkey = user.data.login_hash;
+        return $http.post(url, data).error(function(data, status) {
+          if (status === 400) {
+            return user.data = {};
+          }
+        });
+      };
       return user;
     }
-  ]).directive("navbarUserStatus", [
+  ]);
+
+  angular.module("RubyStream.Directives", []).directive("navbarUserStatus", [
     "CurrentUser", function(CurrentUser) {
       return {
         templateUrl: "/view/navbarUserStatus",
         link: function(scope, element, attr) {}
       };
+    }
+  ]).directive("overlay", [
+    "$state", function($state) {
+      return {
+        restrict: 'C',
+        link: function(scope, element) {
+          console.log(arguments);
+          element.bind('click', function(e) {
+            if (e.toElement === element[0]) {
+              return $state.transitionTo('viewing');
+            }
+          });
+        }
+      };
+    }
+  ]);
+
+  angular.module('RubyStream.Controllers', ['RubyStream.Services']).controller('PlaylistIndex', [
+    "$scope", "$http", function($scope, $http) {
+      return $http.get('/api/playlists').success(function(data) {
+        return $scope.lists = data;
+      });
+    }
+  ]).controller('PlaylistNew', [
+    "$scope", "$http", "CurrentUser", "$state", function($scope, $http, CurrentUser, $state) {
+      $scope.playlist = {
+        name: ""
+      };
+      return $scope.createPlaylist = function() {
+        return CurrentUser.post('/api/playlist/new', $scope.playlist).success(function(pl) {
+          return $state.go('viewing.playlist.view', {
+            id: pl.id
+          });
+        });
+      };
+    }
+  ]).controller('PlaylistView', [
+    "$scope", "$http", "$stateParams", "CurrentUser", function($scope, $http, $stateParams, CurrentUser) {
+      $scope.playlist = {
+        name: ""
+      };
+      $scope.addVideo = function() {
+        CurrentUser.post('/api/playlist/' + $stateParams.id + '/add', $scope.video);
+        return $scope.video = "";
+      };
+      return $http.get('/api/playlist/' + $stateParams.id).success(function(playlist) {
+        return $scope.playlist = playlist;
+      });
     }
   ]);
 

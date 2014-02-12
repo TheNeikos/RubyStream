@@ -1,0 +1,22 @@
+.inner-overlay.modal-content
+  .modal-header
+    %h4 {{playlist.name}}
+
+  .modal-body
+    %form.clearfix{:'ng-submit' => 'addVideo()', :'ng-show' => 'currentUser.loggedIn()' }
+      .col-md-8
+        %input.form-control{:type => "text", :placeholder => "Paste a Video Link here", :'ng-model' => 'video.url'}
+      .col-md-4
+        %input.btn.btn-primary{:type => "submit"}
+
+    %ul.playlist
+      %li.clearfix{:'ng-repeat' => "video in playlist.items"}
+        %img{:'ng-src' => 'http://img.youtube.com/vi/{{video.carrier_id}}/hqdefault.jpg'}
+        %p 
+          %h6 {{video.name}}
+          Length: {{video.length | time}}
+          %br
+          By: 
+          %em {{video.author}}
+  .modal-footer
+    %a.btn.btn-link.pull-left{:'ui-sref' => "viewing.playlist.index"} Back

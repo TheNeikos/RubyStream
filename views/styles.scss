@@ -89,6 +89,14 @@ h1, h2, h3, .navbar-brand {
   right: 0; 
 }
 
+.inner-overlay {
+
+  width: 66.666666666666666666%;
+  margin-left: 16.66666666666666666666%;
+  padding: 5px;
+
+}
+
 //Borders
 
 $border: 1px solid #000;
@@ -223,9 +231,34 @@ $border: 1px solid #000;
 
 .overlay {
   background-color: rgba(0,0,0,0.4);
-  padding-top: 50px;
+  padding-top: 70px;
 }
 
 .inner-overlay {
   background-color: white;
+  
+  border-radius: 10px;
+}
+
+
+ul.playlist {
+
+  height: 50%;
+  overflow-y: scroll;
+  list-style: none;
+  margin-top: 10px;
+
+  li {
+    margin-bottom: 10px
+  }
+
+  h6 {
+    font-weight: bold;
+  }
+
+  img {
+    height: 100px;
+    float: left;
+    margin-right: 20px;
+  }
 }

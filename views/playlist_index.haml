@@ -1,0 +1,10 @@
+.inner-overlay.modal-content
+  .modal-header
+    %h4 Playlist
+  .modal-body
+    %ul.list-unstyled
+      %li{:'ng-repeat' => 'playlist in lists'}
+        %a{:'ui-sref' => 'viewing.playlist.view({id:playlist.id})'}
+          %h5 {{playlist.name}}
+  .modal-footer
+    %a.btn.btn-primary{:'ui-sref' => 'viewing.playlist.new', :'ng-show' => 'currentUser.isModerator()', :'ng-click' => 'dismiss()'} Add a Playlist

@@ -1,0 +1,12 @@
+.inner-overlay.modal-content
+  .modal-header
+    %h4 Add a Playlist
+  .modal-body
+    %form.form-horizontal
+      .form-group
+        %label.col-sm-2.control-label{:for => "username"} Name
+        .col-sm-10
+          %input#username.form-control{type:"text",placeholder:"Name", :'ng-model' => 'playlist.name', :autofocus => true}
+  .modal-footer
+    %button.btn.btn-primary{:'ng-click' => "createPlaylist()"} Create
+    %button.btn{:'ui-sref' => "viewing.playlist.index"} Back

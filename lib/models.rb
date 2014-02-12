@@ -24,27 +24,27 @@ module RubyStream
 
     belongs_to :creator, 'User'
 
-    has n, :playlist_items
+    has n, :items, 'PlaylistItem'
 
-    def addYoutubeVideo(url)
-      id = /\?v=(.+)&?/.match(url)[1]
+    def addYoutubeVideo(url, user)
+      id = /v=([^"&?\/ ]{11})/.match(url)[1]
       raise InvalidUrlError, "The URL provided did not have a recognizable id" unless id
       uri = URI.parse("https://www.googleapis.com/youtube/v3/videos?part=id%2Csnippet%2CcontentDetails&id=#{ id }&key=#{Settings["youtube_api_key"]}")
       http = Net::HTTP.new uri.host, uri.port
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      data = JSON.parse(http.request Net::HTTP::Get.new(uri.request_uri).body)["items"]
+      data = JSON.parse(http.request(Net::HTTP::Get.new(uri.request_uri)).body)["items"]
       raise UnknownVideoError, "The ID provided does not seem to be an accessible youtube video" unless data.length > 0
       data = data[0]
       length = /PT([0-9]+)M([0-9]+)S/.match(data["contentDetails"]["duration"])
-      self.playlist_items.create({
+      self.items.create({
         :carrier => "Youtube", 
         :carrier_id => id, 
         :length => length[1].to_i * 60 + length[2].to_i, 
         :name => data["snippet"]["title"], 
-        :author => data["snippet"]["channelTitle"]
-      })
-
+        :author => data["snippet"]["channelTitle"],
+        :added_by => user
+      }).save
     end
 
   end
@@ -56,16 +56,18 @@ module RubyStream
     property :carrier, String
     property :carrier_id, String
     property :length, Integer
-    property :name, String
-    property :author, String
-    property :score_up, Integer
-    property :score_down, Integer
+    property :name, String, :length => 100
+    property :author, String, :length => 100
+    property :score_up, Integer, :default => 0
+    property :score_down, Integer, :default => 0
 
     belongs_to :added_by, 'User'
     belongs_to :playlist
   end
 
   class LoginError < StandardError; end
+
+  class AuthError < StandardError; end
 
   class User
     include DataMapper::Resource
@@ -80,18 +82,20 @@ module RubyStream
     property :banned, Boolean, :default => false
     property :is_admin, Boolean, :default => false
     property :is_moderator, Boolean, :default => false
-    property :login_hash, String, :default => lambda { |r,p| Digest::MD5.hexdigest("#{r.password_hash}+#{r.name}") }
+    property :login_hash, String
 
     def self.login(name, password)
       user = User.first(:name => name)
       if user
         if user.password_hash == hash_password(user.password_salt, password)
+          user.updateAuthHash!
           return user
         else
           raise LoginError
         end
       else
         user_data = IPBoard::API.getUser(name)
+
         if user_data["member_id"].to_s == "0"
           raise LoginError
         end
@@ -113,7 +117,7 @@ module RubyStream
           end
 
           user.save
-          
+          user.updateAuthHash!
           return user
         else
           raise LoginError
@@ -123,6 +127,19 @@ module RubyStream
 
     def self.hash_password(salt, password)
       Digest::MD5.hexdigest( "#{Digest::MD5.hexdigest(salt)}#{Digest::MD5.hexdigest(password)}" )
+    end
+
+    def self.auth(id, authkey)
+      user = User.first(:id => id)
+      unless user && user.login_hash == authkey
+        raise AuthError
+      end
+      return user
+    end
+
+    def updateAuthHash!
+      self.login_hash = Digest::MD5.hexdigest("#{password_hash}+#{name}+#{Random.rand(100000000)}")
+      save
     end
 
   end

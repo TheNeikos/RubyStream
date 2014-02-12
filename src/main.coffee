@@ -2,7 +2,7 @@ unless window.angular?
   alert("There has been an error loading AngularJS.")
   return
 
-angular.module("RubyStream", ['ui.router', 'ui.bootstrap'])
+angular.module("RubyStream", ['ui.router', 'ui.bootstrap','RubyStream.Services', 'RubyStream.Directives', 'RubyStream.Controllers'])
 .config(["$stateProvider","$locationProvider",($stateProvider,$locationProvider)->
   $stateProvider
   .state('viewing', {
@@ -47,45 +47,28 @@ angular.module("RubyStream", ['ui.router', 'ui.bootstrap'])
   .state('viewing.playlist.index', {
     url: ''
     templateUrl: '/view/playlist_index'
+    controller: 'PlaylistIndex'
   })
   .state('viewing.playlist.new', {
     url: 'new/'
-
+    templateUrl: '/view/playlist_new'
+    controller: 'PlaylistNew'
+  }) 
+  .state('viewing.playlist.view', {
+    url: ':id'
+    templateUrl: '/view/playlist_view'
+    controller: 'PlaylistView'
   }) 
 
   $locationProvider.html5Mode(true)
 ])
 .run(["CurrentUser", "$rootScope",(cu,$rootScope)->
   $rootScope.currentUser = cu
+
+  cu.autoLogin()
 ])
-.factory("CurrentUser", ["$http","$q", ($http,$q)->
-  user = {}
-  user.loggedIn = ->
-    return user.data?
-
-  user.login = (data)->
-    deferred = $q.defer()
-    console.log data
-    $http.post('/user/login', data)
-    .success (data)->
-      if data.error
-        deferred.reject(data.error)
-      else
-        user.data = data 
-        deferred.resolve()
-    return deferred.promise
-
-  user.isAdmin = ->
-    return user.loggedIn() && user.data.is_admin
-
-  user.isModerator = ->
-    return user.loggedIn() && user.data.is_moderator
-
-  return user
-])
-.directive("navbarUserStatus", ["CurrentUser",(CurrentUser)->
-  {
-    templateUrl: "/view/navbarUserStatus"
-    link: (scope, element, attr)->
-  } 
-])
+.filter('time', ->
+  return (input)->
+    input = parseInt(input, 10)
+    return "#{Math.floor(input/60)} Minutes #{input % 60} Seconds"
+)
