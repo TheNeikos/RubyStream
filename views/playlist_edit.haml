@@ -1,0 +1,14 @@
+.inner-overlay.modal-content
+  .modal-header
+    %h4 
+      %small Editing Playlist:
+      {{playlist.name}}
+  .modal-body
+    %form.form-horizontal
+      .form-group
+        %label.col-sm-2.control-label{:for => "username"} Name
+        .col-sm-10
+          %input#username.form-control{type:"text",placeholder:"Name", :'ng-model' => 'playlist.name', :autofocus => true}
+  .modal-footer
+    %button.btn.btn-primary{:'ng-click' => "updatePlaylist()"} Update
+    %button.btn{:'ui-sref' => "viewing.playlist.view({id:playlist.id})"} Back

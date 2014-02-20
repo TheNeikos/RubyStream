@@ -1,25 +1,28 @@
 #viewingroom
   #video
-    %iframe{src:"//www.youtube.com/embed/IXZ9J_0aPMw",frameborder:"0",allowfullscreen: true}
-  #chat
+    %youtube{id:'{{currentVideoId}}', time: '{{playlist.current_time}}', :'ng-if' => 'playlist.items[playlist.current_video-1].carrier == "Youtube"'}
+      #youtube-player
+  #chat{:'ng-controller' => "Chat"}
     %ul
-      - 40.times do |i|
-        %li.message.clearfix
-          .name<
-            = i%2 == 0 ? "Luminescence" : "Neikos"
-          .message
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+      %li.message.clearfix{:'ng-repeat' => 'message in chatMessages'}
+        .name<
+          {{message.user.name}}
+        .message
+          {{message.message}}
     .chat-input
-      %textarea{:'chat-input' => true}
+      %textarea{:'chat-input' => true, :'ng-model' => "message", :'on-enter' => "sendMessage()", :placeholder => "Start Chatting"}
   #playlist
     .header
-      %h2 Next up playing...
+      %h2 
+        Next up playing in 
+        %em {{playlist.name}}
     .preview
-      %img{src:"http://img.youtube.com/vi/IXZ9J_0aPMw/hqdefault.jpg"}
-      .time 15:12
+      %img{src:"http://img.youtube.com/vi/{{playlist.items[playlist.current_video].carrier_id}}/hqdefault.jpg"}
+      .time {{playlist.items[playlist.current_video + 1].length | time:'short'}}
     .title
-      MLP - Season 5 Episode 6 "The Wedding of the Dragons"
+      {{playlist.items[playlist.current_video].name}}
     .author
-      DaPonyUploadz
-    %img.next{src:"http://img.youtube.com/vi/IXZ9J_0aPMw/hqdefault.jpg"}
+      {{playlist.items[playlist.current_video].author}}
+    -#.next
+      -#%img.img-responsive{src:"http://img.youtube.com/vi/{{playlist.items[playlist.current_video + 1].carrier_id}}/hqdefault.jpg"}
   %ui-view

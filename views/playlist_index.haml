@@ -1,10 +1,16 @@
 .inner-overlay.modal-content
   .modal-header
-    %h4 Playlist
+    %h4 Playlists
   .modal-body
-    %ul.list-unstyled
-      %li{:'ng-repeat' => 'playlist in lists'}
+    %ul.list-unstyled.playlist-list
+      %li.clearfix{:'ng-repeat' => 'playlist in playlists'}
+        %input.activated_playlist{type:'radio', :'ng-model' => 'playlist.active', :'ng-click' => 'activatePlaylist(playlist.id)', :'ng-value' => 'true', :name => "active_playlist", :id =>"activate_playlist_{{playlist.id}}"}
+        %label{:for => 'activate_playlist_{{playlist.id}}'}
+        %img{:'ng-src' => 'http://img.youtube.com/vi/{{playlist.items[0].carrier_id}}/hqdefault.jpg'}
         %a{:'ui-sref' => 'viewing.playlist.view({id:playlist.id})'}
-          %h5 {{playlist.name}}
+          %span.playlist-name {{playlist.name}}
+        .total-time Total Length: {{playlist.total_time | time}}
+        .total-videos in {{playlist.video_count}} Video{{playlist.video_count == 1 ? '' : 's'}}
+
   .modal-footer
-    %a.btn.btn-primary{:'ui-sref' => 'viewing.playlist.new', :'ng-show' => 'currentUser.isModerator()', :'ng-click' => 'dismiss()'} Add a Playlist
+    %a.btn.btn-primary{:'ui-sref' => 'viewing.playlist.new', :'ng-show' => 'currentUser.isModerator()'} Add a Playlist

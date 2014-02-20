@@ -5,6 +5,7 @@ gem 'redis'
 
 gem 'dm-sqlite-adapter'
 gem 'dm-serializer'
+gem 'dm-is-list'
 gem 'data_mapper'
 
 

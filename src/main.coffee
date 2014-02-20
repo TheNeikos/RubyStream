@@ -2,12 +2,13 @@ unless window.angular?
   alert("There has been an error loading AngularJS.")
   return
 
-angular.module("RubyStream", ['ui.router', 'ui.bootstrap','RubyStream.Services', 'RubyStream.Directives', 'RubyStream.Controllers'])
-.config(["$stateProvider","$locationProvider",($stateProvider,$locationProvider)->
+angular.module("RubyStream", ['ui.router', 'ui.bootstrap','ui.sortable','RubyStream.Services', 'RubyStream.Directives', 'RubyStream.Controllers'])
+.config(["$stateProvider","$locationProvider", "$sceDelegateProvider",($stateProvider,$locationProvider,$sceDelegateProvider)->
   $stateProvider
   .state('viewing', {
     url: '/'
     templateUrl: '/view/viewing'
+    controller: 'Viewing'
   })
   .state('viewing.user', {
     url: 'user/'
@@ -53,6 +54,11 @@ angular.module("RubyStream", ['ui.router', 'ui.bootstrap','RubyStream.Services',
     url: 'new/'
     templateUrl: '/view/playlist_new'
     controller: 'PlaylistNew'
+  })
+  .state('viewing.playlist.edit', {
+    url: ':id/edit'
+    templateUrl: '/view/playlist_edit'
+    controller: 'PlaylistEdit'
   }) 
   .state('viewing.playlist.view', {
     url: ':id'
@@ -61,14 +67,29 @@ angular.module("RubyStream", ['ui.router', 'ui.bootstrap','RubyStream.Services',
   }) 
 
   $locationProvider.html5Mode(true)
-])
-.run(["CurrentUser", "$rootScope",(cu,$rootScope)->
-  $rootScope.currentUser = cu
 
+  $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://youtube.com/*'])
+
+])
+.run(["CurrentUser", "$rootScope","WebSocket", "ChatMessages", (cu,$rootScope,WebSocket,ChatMessages)->
+  $rootScope.currentUser = cu
+  $rootScope.chatMessages = ChatMessages
   cu.autoLogin()
+
+  # Youtube stuff
+
+  tag = document.createElement('script')
+  tag.src = "https://www.youtube.com/iframe_api"
+
+  document.getElementsByTagName('body')[0].appendChild tag
+
+
 ])
 .filter('time', ->
-  return (input)->
+  return (input, output)->
     input = parseInt(input, 10)
-    return "#{Math.floor(input/60)} Minutes #{input % 60} Seconds"
+    if output == 'short'
+      return "#{Math.floor(input/60)}:#{input % 60}"
+    else
+      return "#{Math.floor(input/60)} Minutes #{input % 60} Seconds"
 )

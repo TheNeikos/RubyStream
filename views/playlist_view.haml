@@ -1,6 +1,8 @@
 .inner-overlay.modal-content
   .modal-header
-    %h4 {{playlist.name}}
+    %h4 
+      {{playlist.name}}
+      %a.small.glyphicon.glyphicon-edit{:'ng-show' => 'currentUser.loggedIn()', :'ui-sref' => '^.edit({id:playlist.id})'}
 
   .modal-body
     %form.clearfix{:'ng-submit' => 'addVideo()', :'ng-show' => 'currentUser.loggedIn()' }
@@ -9,14 +11,17 @@
       .col-md-4
         %input.btn.btn-primary{:type => "submit"}
 
-    %ul.playlist
+    %ul.playlist{:'ui-sortable' => 'sortableOptions', :'ng-model' => 'playlist.items'}
       %li.clearfix{:'ng-repeat' => "video in playlist.items"}
+        .handle.glyphicon.glyphicon-align-justify{:'ng-view' => 'currentUser.loggedIn()'} 
         %img{:'ng-src' => 'http://img.youtube.com/vi/{{video.carrier_id}}/hqdefault.jpg'}
         %p 
           %h6 {{video.name}}
-          Length: {{video.length | time}}
+          {{video.length | time}}
           %br
           By: 
           %em {{video.author}}
+        %button.btn.btn-danger.btn-xs.pull-right.remove{:'ng-click' => "setCurrentVideo(video.id)", :'ng-show' => 'currentUser.loggedIn()', :'ng-disabled' => "playlist.current_video == video.position", :'ng-show' => "playlist.active"} Set as Current Video
+        %button.btn.btn-danger.btn-xs.pull-right.remove{:'ng-click' => "removeVideo(video.id)", :'ng-show' => 'currentUser.loggedIn()'} Remove
   .modal-footer
     %a.btn.btn-link.pull-left{:'ui-sref' => "viewing.playlist.index"} Back
