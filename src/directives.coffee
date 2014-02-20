@@ -15,12 +15,12 @@ angular.module("RubyStream.Directives",[])
       return
   }
 ])
-.directive("youtube", ["$window", "$rootScope", ($window, $rootScope)->
+.directive("youtube", ["$window", "$rootScope", "$interval", ($window, $rootScope, $interval)->
   {
     restrict: 'E'
     scope: {
       id: '@'
-      time: '@'
+      time: '='
     }
     link: (scope, element)->
       startPlayer = ->
@@ -36,7 +36,13 @@ angular.module("RubyStream.Directives",[])
                   player.loadVideoById(scope.id, scope.time)
                   oldId = newProperties[1]
               )
-            onStateChange: ->
+              interval = $interval( -> 
+                scope.time = player.getCurrentTime()
+              , 1000)
+              element.on('$destroy',->
+                $interval.cancel(interval)
+              )
+
           }
         })
       if $window.YT and $window.YT.Player
@@ -59,9 +65,10 @@ angular.module("RubyStream.Directives",[])
     }
     link: (scope, element, attr)->
       element.on("keypress", (e)->
-        if(e.keyCode == 13 and e.shiftKey == false)
-          e.preventDefault()
-          scope.onEnter()
+        scope.$apply ->
+          if(e.keyCode == 13 and e.shiftKey == false)
+            e.preventDefault()
+            scope.onEnter()
       )
   }
 ])

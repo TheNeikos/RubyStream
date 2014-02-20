@@ -78,7 +78,7 @@
       });
     }
   ]).controller('Viewing', [
-    "$scope", "Playlists", "$sce", "$window", function($scope, Playlists, $sce, $window) {
+    "$scope", "Playlists", function($scope, Playlists) {
       return Playlists.all().then(function() {
         return $scope.$watch(Playlists.getActivePlaylist, function(playlist) {
           $scope.playlist = playlist;
@@ -125,12 +125,12 @@
       };
     }
   ]).directive("youtube", [
-    "$window", "$rootScope", function($window, $rootScope) {
+    "$window", "$rootScope", "$interval", function($window, $rootScope, $interval) {
       return {
         restrict: 'E',
         scope: {
           id: '@',
-          time: '@'
+          time: '='
         },
         link: function(scope, element) {
           var startPlayer;
@@ -139,12 +139,12 @@
             return player = new YT.Player('youtube-player', {
               events: {
                 onReady: function() {
-                  var oldId;
+                  var interval, oldId;
                   oldId = "";
                   if (scope.id && scope.time) {
                     player.loadVideoById(scope.id, scope.time);
                   }
-                  return scope.$watchCollection('[time, id]', function(newProperties, oldProperties) {
+                  scope.$watchCollection('[time, id]', function(newProperties, oldProperties) {
                     var curTime;
                     if (!((scope.id != null) && (scope.time != null))) {
                       return;
@@ -155,8 +155,13 @@
                       return oldId = newProperties[1];
                     }
                   });
-                },
-                onStateChange: function() {}
+                  interval = $interval(function() {
+                    return scope.time = player.getCurrentTime();
+                  }, 1000);
+                  return element.on('$destroy', function() {
+                    return $interval.cancel(interval);
+                  });
+                }
               }
             });
           };
@@ -181,10 +186,12 @@
         },
         link: function(scope, element, attr) {
           return element.on("keypress", function(e) {
-            if (e.keyCode === 13 && e.shiftKey === false) {
-              e.preventDefault();
-              return scope.onEnter();
-            }
+            return scope.$apply(function() {
+              if (e.keyCode === 13 && e.shiftKey === false) {
+                e.preventDefault();
+                return scope.onEnter();
+              }
+            });
           });
         }
       };
@@ -433,23 +440,33 @@
         return console.info("Closed");
       };
       socket.onmessage = function(data) {
-        data = JSON.parse(data.data);
-        switch (data.action) {
-          case "reloadPlaylists":
-            return Playlists.reload(data.id);
-          case "updateTime":
-            return $rootScope.$apply(function() {
-              var pl;
-              pl = Playlists.getActivePlaylist();
-              if (pl) {
-                return pl.current_time = data.time;
-              }
-            });
-          case "insertChatMessage":
-            data = JSON.parse(data.data);
-            data.type = "message";
-            return ChatMessages.add(data);
-        }
+        return $rootScope.$apply(function() {
+          data = JSON.parse(data.data);
+          switch (data.action) {
+            case "reloadPlaylists":
+              return Playlists.reload(data.id);
+            case "updateTime":
+              return $rootScope.$apply(function() {
+                var pl;
+                pl = Playlists.getActivePlaylist();
+                if (pl) {
+                  return pl.current_time = data.time;
+                }
+              });
+            case "insertChatMessage":
+              data = JSON.parse(data.data);
+              data.type = "message";
+              return ChatMessages.add(data);
+            case "insertUserJoined":
+              data = data.data;
+              data.type = "userJoined";
+              return ChatMessages.add(data);
+            case "insertUserLeft":
+              data = data.data;
+              data.type = "userLeft";
+              return ChatMessages.add(data);
+          }
+        });
       };
       return {
         send: function(action, data) {

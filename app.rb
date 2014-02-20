@@ -70,12 +70,10 @@ def run(opts)
 
     EM.add_periodic_timer(1) do
 
-      Thread.new {
+      EM.defer {
 
         pl = RubyStream::Playlist.first(:active => true)
         pl.current_time =  pl.current_time + 1
-
-        RubyStream::WebsocketServer.instance.updateActiveTime(pl.current_time)
 
         if(pl.current_time > pl.items.first(:position => pl.current_video).length)
           

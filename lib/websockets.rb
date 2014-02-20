@@ -18,6 +18,7 @@ module RubyStream
         end
         ws.onclose do
           @sockets.delete(client)
+          sendUserLeft(client.user) if client.user
         end
       end
     end 
@@ -44,10 +45,22 @@ module RubyStream
         s.ws.send({'action' => "insertChatMessage", 'data' => msg.to_json({:relationships=>{:user => {:only =>[:name,:id,:external_id]}}})}.to_json)
       }
     end
+
+    def sendUserJoined(user)
+      @sockets.each { |s|
+        s.ws.send({'action' => "insertUserJoined", 'data' => {:message => "#{user.name} has joined the Chat."}}.to_json)
+      }
+    end
+
+    def sendUserLeft(user)
+      @sockets.each { |s|
+        s.ws.send({'action' => "insertUserLeft", 'data' => {:message => "#{user.name} has left the Chat."}}.to_json)
+      }
+    end
   end
 
   class WebsocketClient
-    attr_reader :ws
+    attr_reader :ws, :user
     def initialize(ws)
       @user = nil
       @ws = ws
@@ -66,6 +79,8 @@ module RubyStream
           user = User.auth(data["user_id"], data["user_authkey"])
           puts "Authenticated User: #{user.name}"
           @user = user
+
+          WebsocketServer.instance.sendUserJoined user
         end
       when "chat_message"
         if @user and (not @user.muted or not @user.banned)

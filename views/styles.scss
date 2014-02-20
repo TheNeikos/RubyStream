@@ -250,6 +250,12 @@ $border: 1px solid #000;
   .message {
     word-wrap: break-word;
     margin-bottom: 3px;
+    &[data-type="userJoined"], &[data-type="userLeft"] {
+      .name {
+        display: none;
+      }
+      text-align: center;
+    }
   }
 }
 

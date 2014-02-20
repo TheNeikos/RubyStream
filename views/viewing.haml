@@ -1,10 +1,10 @@
 #viewingroom
   #video
-    %youtube{id:'{{currentVideoId}}', time: '{{playlist.current_time}}', :'ng-if' => 'playlist.items[playlist.current_video-1].carrier == "Youtube"'}
+    %youtube{id:'{{currentVideoId}}', time: 'playlist.current_time', :'ng-if' => 'playlist.items[playlist.current_video-1].carrier == "Youtube"'}
       #youtube-player
   #chat{:'ng-controller' => "Chat"}
     %ul{:'chat-window' => true, :messages => 'chatMessages.messages'}
-      %li.message.clearfix{:'ng-repeat' => 'message in chatMessages.messages'}
+      %li.message.clearfix{:'ng-repeat' => 'message in chatMessages.messages', :'data-type' => '{{message.type}}'}
         .name<
           {{message.user.name}}
         .message

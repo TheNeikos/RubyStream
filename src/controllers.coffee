@@ -63,7 +63,7 @@ angular.module('RubyStream.Controllers', ['RubyStream.Services'])
   Playlists.get($stateParams.id).then (data)->
     $scope.playlist = data
 ])
-.controller('Viewing', ["$scope","Playlists", "$sce", "$window",($scope, Playlists, $sce, $window)->
+.controller('Viewing', ["$scope","Playlists",($scope, Playlists)->
   Playlists.all().then ->
     $scope.$watch(Playlists.getActivePlaylist, (playlist)->
       $scope.playlist = playlist

@@ -109,19 +109,28 @@ angular.module("RubyStream.Services",[])
   socket.onclose = ->
     console.info("Closed")
   socket.onmessage = (data)->
-    data = JSON.parse data.data
-    switch data.action
-      when "reloadPlaylists" 
-        Playlists.reload(data.id)
-      when "updateTime"
-        $rootScope.$apply ->
-          pl = Playlists.getActivePlaylist()
-          if pl
-            pl.current_time = data.time
-      when "insertChatMessage"
-        data = JSON.parse data.data
-        data.type = "message"
-        ChatMessages.add data
+    $rootScope.$apply ->
+      data = JSON.parse data.data
+      switch data.action
+        when "reloadPlaylists" 
+          Playlists.reload(data.id)
+        when "updateTime"
+          $rootScope.$apply ->
+            pl = Playlists.getActivePlaylist()
+            if pl
+              pl.current_time = data.time
+        when "insertChatMessage"
+          data = JSON.parse data.data
+          data.type = "message"
+          ChatMessages.add data
+        when "insertUserJoined"
+          data = data.data
+          data.type = "userJoined"
+          ChatMessages.add data
+        when "insertUserLeft"
+          data = data.data
+          data.type = "userLeft"
+          ChatMessages.add data
 
   return {
     send: (action, data)->
