@@ -139,20 +139,20 @@
             return player = new YT.Player('youtube-player', {
               events: {
                 onReady: function() {
+                  var oldId;
+                  oldId = "";
                   if (scope.id && scope.time) {
                     player.loadVideoById(scope.id, scope.time);
                   }
-                  scope.$watch('id', function(newId) {
-                    if (newId) {
-                      return player.loadVideoById(newId);
-                    }
-                  });
-                  return scope.$watch('time', function(newTime) {
+                  return scope.$watchCollection('[time, id]', function(newProperties, oldProperties) {
                     var curTime;
+                    if (!((scope.id != null) && (scope.time != null))) {
+                      return;
+                    }
                     curTime = player.getCurrentTime();
-                    if (Math.abs(curTime - newTime) > 10) {
-                      console.log("Updated from " + (player.getCurrentTime()) + " to " + newTime);
-                      return player.loadVideoById(scope.id, newTime);
+                    if (Math.abs(curTime - scope.time) > 10 || newProperties[1] !== oldId) {
+                      player.loadVideoById(scope.id, scope.time);
+                      return oldId = newProperties[1];
                     }
                   });
                 },
@@ -186,6 +186,22 @@
               return scope.onEnter();
             }
           });
+        }
+      };
+    }
+  ]).directive("chatWindow", [
+    "$timeout", function($timeout) {
+      return {
+        restrict: 'A',
+        scope: {
+          msgs: '=messages'
+        },
+        link: function(scope, element, attr) {
+          scope.$watch('msgs', function() {
+            return $timeout(function() {
+              return element.scrollTop(element[0].scrollHeight);
+            }, 1);
+          }, true);
         }
       };
     }
@@ -430,8 +446,9 @@
               }
             });
           case "insertChatMessage":
-            console.log(data.data);
-            return ChatMessages.push(JSON.parse(data.data));
+            data = JSON.parse(data.data);
+            data.type = "message";
+            return ChatMessages.add(data);
         }
       };
       return {
@@ -453,7 +470,13 @@
     }
   ]).factory("ChatMessages", [
     function() {
-      return [];
+      var messages;
+      messages = {};
+      messages.messages = [];
+      messages.add = function(data) {
+        return messages.messages.push(data);
+      };
+      return messages;
     }
   ]);
 

@@ -27,15 +27,14 @@ angular.module("RubyStream.Directives",[])
         player = new YT.Player('youtube-player', {
           events: {
             onReady: ->
+              oldId = ""
               player.loadVideoById(scope.id, scope.time) if scope.id and scope.time
-              scope.$watch('id', (newId)->
-                player.loadVideoById(newId) if newId
-              )
-              scope.$watch('time', (newTime)->
-                curTime =  player.getCurrentTime()
-                if  Math.abs( curTime - newTime) > 10
-                  console.log "Updated from #{player.getCurrentTime()} to #{newTime}"
-                  player.loadVideoById(scope.id, newTime)
+              scope.$watchCollection('[time, id]', (newProperties, oldProperties)->
+                return unless scope.id? and scope.time?
+                curTime = player.getCurrentTime()
+                if Math.abs( curTime - scope.time) > 10 or newProperties[1] != oldId
+                  player.loadVideoById(scope.id, scope.time)
+                  oldId = newProperties[1]
               )
             onStateChange: ->
           }
@@ -64,5 +63,20 @@ angular.module("RubyStream.Directives",[])
           e.preventDefault()
           scope.onEnter()
       )
+  }
+])
+.directive("chatWindow", ["$timeout", ($timeout)->
+  {
+    restrict: 'A'
+    scope: {
+      msgs: '=messages'
+    }
+    link: (scope, element, attr)->
+      scope.$watch('msgs', ->
+        $timeout(->
+          element.scrollTop(element[0].scrollHeight)
+        , 1)
+      , true)
+      return
   }
 ])

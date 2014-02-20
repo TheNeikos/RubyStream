@@ -195,7 +195,7 @@ module RubyStream
     
     property :id, Serial
     property :message, String, :length => 1024
-    property :time_added, DateTime, :default => lambda {|p,r| Time.now }
+    property :time_added, DateTime, :default => lambda {|p,r| DateTime.now }
 
     property :deleted, ParanoidBoolean
 

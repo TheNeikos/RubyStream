@@ -3,14 +3,14 @@
     %youtube{id:'{{currentVideoId}}', time: '{{playlist.current_time}}', :'ng-if' => 'playlist.items[playlist.current_video-1].carrier == "Youtube"'}
       #youtube-player
   #chat{:'ng-controller' => "Chat"}
-    %ul
-      %li.message.clearfix{:'ng-repeat' => 'message in chatMessages'}
+    %ul{:'chat-window' => true, :messages => 'chatMessages.messages'}
+      %li.message.clearfix{:'ng-repeat' => 'message in chatMessages.messages'}
         .name<
           {{message.user.name}}
         .message
           {{message.message}}
     .chat-input
-      %textarea{:'chat-input' => true, :'ng-model' => "message", :'on-enter' => "sendMessage()", :placeholder => "Start Chatting"}
+      %textarea{:'chat-input' => true, :'ng-model' => "message", :'on-enter' => "sendMessage()", :placeholder => "Start Chatting", :'ng-disabled' => '!currentUser.loggedIn()'}
   #playlist
     .header
       %h2 

@@ -119,8 +119,9 @@ angular.module("RubyStream.Services",[])
           if pl
             pl.current_time = data.time
       when "insertChatMessage"
-        console.log data.data
-        ChatMessages.push JSON.parse data.data
+        data = JSON.parse data.data
+        data.type = "message"
+        ChatMessages.add data
 
   return {
     send: (action, data)->
@@ -137,7 +138,10 @@ angular.module("RubyStream.Services",[])
   }
 ])
 .factory("ChatMessages", [->
-
-  return []
+  messages = {}
+  messages.messages = []
+  messages.add = (data)->
+    messages.messages.push data
+  return messages
 
 ])

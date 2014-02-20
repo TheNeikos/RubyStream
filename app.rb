@@ -75,15 +75,12 @@ def run(opts)
         pl = RubyStream::Playlist.first(:active => true)
         pl.current_time =  pl.current_time + 1
 
-        puts "Updating to #{pl.current_time}"
-
         RubyStream::WebsocketServer.instance.updateActiveTime(pl.current_time)
 
         if(pl.current_time > pl.items.first(:position => pl.current_video).length)
           
           pl.current_time = 0 
           pl.current_video =  pl.current_video + 1 
-          puts "Updating to #{pl.current_time} and #{pl.current_video}"
         
           if( pl.current_video > pl.items.length)
             pl.current_video =  1
@@ -107,11 +104,7 @@ module RubyStream
 
       set :public_folder, File.dirname(__FILE__) + '/static'
 
-      set :port, 80
-
       set :threaded, false
-
-      set :bind, "0.0.0.0"
     end
 
     get '/stylesheet.css' do
