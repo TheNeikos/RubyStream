@@ -73,7 +73,10 @@ def run(opts)
       EM.defer {
 
         pl = RubyStream::Playlist.first(:active => true)
+
         pl.current_time =  pl.current_time + 1
+
+        next if pl.items.length < 1
 
         if(pl.current_time > pl.items.first(:position => pl.current_video).length)
           

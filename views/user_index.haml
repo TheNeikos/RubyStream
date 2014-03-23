@@ -1,0 +1,11 @@
+.overlay
+  %ui-view
+  .inner-overlay.modal-content
+    .modal-header
+      %h4 Users online
+    .modal-body
+      %ul.list-unstyled.user-list
+        %li.clearfix{:'ng-repeat' => 'user in userList.list'}
+          .name {{user.name}}
+        %li.clearfix
+          and {{userList.anons}} Anonymous Users.

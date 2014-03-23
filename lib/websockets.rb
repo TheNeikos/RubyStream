@@ -15,10 +15,12 @@ module RubyStream
         client = WebsocketClient.new ws
         ws.onopen do
           @sockets << client
+          updateUserCount
         end
         ws.onclose do
           @sockets.delete(client)
           sendUserLeft(client.user) if client.user
+          updateUserCount
         end
       end
     end 
@@ -27,42 +29,52 @@ module RubyStream
 
     end
 
-    def updatePlaylist(id)
-      puts "Sending reload"
+    def sendToAll data
       @sockets.each { |s|
-        s.ws.send({'action' => "reloadPlaylists", 'id' => id}.to_json)
+        s.ws.send(data.to_json)
       }
+    end
+
+    def updatePlaylist(id)
+      @sendToAll {'action' => "reloadPlaylists", 'id' => id}
     end
 
     def updateActiveTime(time)
-      @sockets.each { |s|
-        s.ws.send({'action' => "updateTime", 'time' => time}.to_json)
-      }
+      @sendToAll {'action' => "updateTime", 'time' => time}
     end
 
     def sendMessage(msg)
-      @sockets.each { |s|
-        s.ws.send({'action' => "insertChatMessage", 'data' => msg.to_json({:relationships=>{:user => {:only =>[:name,:id,:external_id]}}})}.to_json)
-      }
+      @sendToAll {'action' => "insertChatMessage", 'data' => msg.to_json( {:relationships=> {:user => {:only => [:name,:id,:external_id] } } } ) }
     end
 
     def sendUserJoined(user)
-      @sockets.each { |s|
-        s.ws.send({'action' => "insertUserJoined", 'data' => {:message => "#{user.name} has joined the Chat."}}.to_json)
-      }
+      @sendToAll {'action' => "insertUserJoined", 'data' => {:message => "#{user.name} has joined the Chat."}}
     end
 
     def sendUserLeft(user)
-      @sockets.each { |s|
-        s.ws.send({'action' => "insertUserLeft", 'data' => {:message => "#{user.name} has left the Chat."}}.to_json)
-      }
+      @sendToAll {'action' => "insertUserLeft", 'data' => {:message => "#{user.name} has left the Chat."}}
+    end
+
+    def updateUserCount
+      data = []
+      anons = 0
+      @sockets.each do |socket|
+        if socket.user.nil?
+          anons = anons + 1
+        else
+          data << socket.user.to_json(:only => [:name, :id, :external_id])
+        end
+      end
+
+      @sendToAll {'action' => "updateUsers", 'data' => {users: data.uniq, anons:anons}}
     end
   end
 
   class WebsocketClient
-    attr_reader :ws, :user
+    attr_reader :ws
+    attr_accessor :user
     def initialize(ws)
-      @user = nil
+      user = nil
       @ws = ws
       ws.onmessage do |msg|
         handleMessage(msg)
@@ -73,21 +85,35 @@ module RubyStream
       message = JSON.parse(msg)
       puts message
       data = message["data"]
-      case(message["action"])
-      when "auth"
-        begin 
-          user = User.auth(data["user_id"], data["user_authkey"])
+      action = ('handle_' + message['action']).to_sym
+
+      return unless self.instance_methods(false).include?(action)
+
+      self.send action, data # Actually call the method
+
+    end
+
+
+    def handle_auth data
+      begin 
+          self.user = User.auth(data["user_id"], data["user_authkey"])
           puts "Authenticated User: #{user.name}"
-          @user = user
 
           WebsocketServer.instance.sendUserJoined user
+          WebsocketServer.instance.updateUserCount
         end
-      when "chat_message"
-        if @user and (not @user.muted or not @user.banned)
-          ChatServer.instance.handleChatMessage(@user, data["message"])
-        end
+    end
+
+    def handle_chat_message data
+      if self.user and (not self.user.muted or not self.user.banned)
+        ChatServer.instance.handleChatMessage(self.user, data["message"])
       end
     end
+
   end
 
 end
+
+
+
+

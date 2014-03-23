@@ -102,7 +102,7 @@
         });
       };
     }
-  ]);
+  ]).controller('UserIndex', [function() {}]);
 
   angular.module("RubyStream.Directives", []).directive("navbarUserStatus", [
     "CurrentUser", function(CurrentUser) {
@@ -278,15 +278,20 @@
         url: ':id',
         templateUrl: '/view/playlist_view',
         controller: 'PlaylistView'
+      }).state('viewing.users', {
+        url: 'users/',
+        templateUrl: '/view/user_index',
+        controller: 'UserIndex'
       });
       $locationProvider.html5Mode(true);
       return $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://youtube.com/*']);
     }
   ]).run([
-    "CurrentUser", "$rootScope", "WebSocket", "ChatMessages", function(cu, $rootScope, WebSocket, ChatMessages) {
+    "CurrentUser", "$rootScope", "WebSocket", "ChatMessages", "UserList", function(cu, $rootScope, WebSocket, ChatMessages, UserList) {
       var tag;
       $rootScope.currentUser = cu;
       $rootScope.chatMessages = ChatMessages;
+      $rootScope.userList = UserList;
       cu.autoLogin();
       tag = document.createElement('script');
       tag.src = "https://www.youtube.com/iframe_api";
@@ -430,7 +435,7 @@
       return funcs;
     }
   ]).factory("WebSocket", [
-    "Playlists", "$rootScope", "$timeout", "ChatMessages", function(Playlists, $rootScope, $timeout, ChatMessages) {
+    "Playlists", "$rootScope", "$timeout", "ChatMessages", "UserList", function(Playlists, $rootScope, $timeout, ChatMessages, UserList) {
       var socket;
       socket = new WebSocket('ws://' + window.location.host + '/websocket');
       socket.onopen = function() {
@@ -465,6 +470,9 @@
               data = data.data;
               data.type = "userLeft";
               return ChatMessages.add(data);
+            case "updateUsers":
+              data = data.data;
+              return UserList.update(data);
           }
         });
       };
@@ -494,6 +502,23 @@
         return messages.messages.push(data);
       };
       return messages;
+    }
+  ]).factory("UserList", [
+    function() {
+      var list;
+      list = {};
+      list.list = [];
+      list.anons = 0;
+      list.update = function(data) {
+        list.anons = data.anons;
+        list.list.length = 0;
+        data.users.forEach(function(user) {
+          user = JSON.parse(user);
+          return list.list.push(user);
+        });
+        return console.log(list.list);
+      };
+      return list;
     }
   ]);
 

@@ -100,7 +100,7 @@ angular.module("RubyStream.Services",[])
     return pl
   return funcs
 ])  
-.factory("WebSocket", ["Playlists", "$rootScope", "$timeout", "ChatMessages",(Playlists, $rootScope, $timeout, ChatMessages)->
+.factory("WebSocket", ["Playlists", "$rootScope", "$timeout", "ChatMessages", "UserList",(Playlists, $rootScope, $timeout, ChatMessages, UserList)->
 
   socket = new WebSocket('ws://'+window.location.host+ '/websocket')
 
@@ -131,6 +131,9 @@ angular.module("RubyStream.Services",[])
           data = data.data
           data.type = "userLeft"
           ChatMessages.add data
+        when "updateUsers"
+          data = data.data
+          UserList.update data
 
   return {
     send: (action, data)->
@@ -153,4 +156,17 @@ angular.module("RubyStream.Services",[])
     messages.messages.push data
   return messages
 
+])
+.factory("UserList", [->
+  list = {}
+  list.list = []
+  list.anons = 0
+  list.update = (data)->
+    list.anons = data.anons
+    list.list.length = 0
+    data.users.forEach (user)->
+      user = JSON.parse user
+      list.list.push user
+    console.log list.list
+  return list
 ])

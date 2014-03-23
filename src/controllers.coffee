@@ -83,3 +83,6 @@ angular.module('RubyStream.Controllers', ['RubyStream.Services'])
       message: message
     })
 ])
+.controller('UserIndex', [->
+  
+])

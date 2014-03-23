@@ -64,16 +64,22 @@ angular.module("RubyStream", ['ui.router', 'ui.bootstrap','ui.sortable','RubyStr
     url: ':id'
     templateUrl: '/view/playlist_view'
     controller: 'PlaylistView'
-  }) 
+  })
+  .state('viewing.users', {
+    url: 'users/'
+    templateUrl: '/view/user_index'
+    controller: 'UserIndex'
+  })
 
   $locationProvider.html5Mode(true)
 
   $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://youtube.com/*'])
 
 ])
-.run(["CurrentUser", "$rootScope","WebSocket", "ChatMessages", (cu,$rootScope,WebSocket,ChatMessages)->
+.run(["CurrentUser", "$rootScope","WebSocket", "ChatMessages", "UserList", (cu, $rootScope, WebSocket, ChatMessages, UserList)->
   $rootScope.currentUser = cu
   $rootScope.chatMessages = ChatMessages
+  $rootScope.userList = UserList
   cu.autoLogin()
 
   # Youtube stuff
