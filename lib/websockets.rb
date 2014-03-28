@@ -36,23 +36,23 @@ module RubyStream
     end
 
     def updatePlaylist(id)
-      @sendToAll {'action' => "reloadPlaylists", 'id' => id}
+      sendToAll 'action' => "reloadPlaylists", 'id' => id
     end
 
     def updateActiveTime(time)
-      @sendToAll {'action' => "updateTime", 'time' => time}
+      sendToAll 'action' => "updateTime", 'time' => time
     end
 
     def sendMessage(msg)
-      @sendToAll {'action' => "insertChatMessage", 'data' => msg.to_json( {:relationships=> {:user => {:only => [:name,:id,:external_id] } } } ) }
+      sendToAll 'action' => "insertChatMessage", 'data' => msg.to_json( {:relationships=> {:user => {:only => [:name,:id,:external_id] } } } ) 
     end
 
     def sendUserJoined(user)
-      @sendToAll {'action' => "insertUserJoined", 'data' => {:message => "#{user.name} has joined the Chat."}}
+      sendToAll 'action' => "insertUserJoined", 'data' => { :message => "#user.name has joined the Chat." }
     end
 
     def sendUserLeft(user)
-      @sendToAll {'action' => "insertUserLeft", 'data' => {:message => "#{user.name} has left the Chat."}}
+      sendToAll 'action' => "insertUserLeft", 'data' => { :message => "#user.name has left the Chat." }
     end
 
     def updateUserCount
@@ -66,7 +66,7 @@ module RubyStream
         end
       end
 
-      @sendToAll {'action' => "updateUsers", 'data' => {users: data.uniq, anons:anons}}
+      sendToAll 'action' => "updateUsers", 'data' => {users: data.uniq, anons:anons}
     end
   end
 
@@ -87,7 +87,7 @@ module RubyStream
       data = message["data"]
       action = ('handle_' + message['action']).to_sym
 
-      return unless self.instance_methods(false).include?(action)
+      return unless self.respond_to? action
 
       self.send action, data # Actually call the method
 
