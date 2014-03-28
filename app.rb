@@ -24,28 +24,6 @@ def run(opts)
     port    = opts[:port]   || '80'
     web_app = opts[:app]
 
-    # create a base-mapping that our application will set at. If I
-    # have the following routes:
-    #
-    #   get '/hello' do
-    #     'hello!'
-    #   end
-    #
-    #   get '/goodbye' do
-    #     'see ya later!'
-    #   end
-    #
-    # Then I will get the following:
-    #
-    #   mapping: '/'
-    #   routes:
-    #     /hello
-    #     /goodbye
-    #
-    #   mapping: '/api'
-    #   routes:
-    #     /api/hello
-    #     /api/goodbye
     dispatch = Rack::Builder.app do
       map '/' do
         run web_app
@@ -54,7 +32,7 @@ def run(opts)
 
     # NOTE that we have to use an EM-compatible web-server. There
     # might be more, but these are some that are currently available.
-    unless ['thin', 'hatetepe', 'goliath'].include? server
+    unless ['thin'].include? server
       raise "Need an EM webserver, but #{server} isn't"
     end
 

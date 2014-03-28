@@ -77,6 +77,7 @@ angular.module('RubyStream.Controllers', ['RubyStream.Services'])
 .controller('Chat', ["$scope", "WebSocket", ($scope, WebSocket)->
   $scope.message = ""
   $scope.sendMessage = ->
+    return if($scope.message == "")
     message = $scope.message
     $scope.message = ""
     WebSocket.send("chat_message", {

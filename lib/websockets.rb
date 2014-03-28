@@ -48,11 +48,11 @@ module RubyStream
     end
 
     def sendUserJoined(user)
-      sendToAll 'action' => "insertUserJoined", 'data' => { :message => "#user.name has joined the Chat." }
+      sendToAll 'action' => "insertUserJoined", 'data' => { :message => "#{user.name} has joined the Chat." }
     end
 
     def sendUserLeft(user)
-      sendToAll 'action' => "insertUserLeft", 'data' => { :message => "#user.name has left the Chat." }
+      sendToAll 'action' => "insertUserLeft", 'data' => { :message => "#{user.name} has left the Chat." }
     end
 
     def updateUserCount
