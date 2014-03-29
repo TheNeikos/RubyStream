@@ -2,7 +2,8 @@
   .modal-header
     %h4 
       {{playlist.name}}
-      %a.small.glyphicon.glyphicon-edit{:'ng-show' => 'currentUser.loggedIn()', :'ui-sref' => '^.edit({id:playlist.id})'}
+      %a.small.glyphicon.glyphicon-edit{:'ng-show' => 'currentUser.isModerator()', :'ui-sref' => '^.edit({id:playlist.id})'}
+      %a.small.glyphicon.glyphicon-remove{:'ng-show' => 'currentUser.isModerator()', :'ui-sref' => '^.delete({id:playlist.id})'}
 
   .modal-body
     %form.clearfix{:'ng-submit' => 'addVideo()', :'ng-show' => 'currentUser.loggedIn()' }

@@ -6,6 +6,7 @@
     .modal-body
       %ul.list-unstyled.user-list
         %li.clearfix{:'ng-repeat' => 'user in userList.list'}
+          %img.avatar{:'ng-src' => 'https://worldofequestria.com/uploads/profile/photo-thumb-{{user.external_id}}.png'}
           .name {{user.name}}
-        %li.clearfix
-          and {{userList.anons}} Anonymous Users.
+    .modal-footer{:style => "margin-top: 0px;"}
+      .anonymous-users {{userList.anons}} other Users.

@@ -29,6 +29,19 @@ angular.module('RubyStream.Controllers', ['RubyStream.Services'])
     .success (pl)->
       $state.go('viewing.playlist.view', {id: pl.id})
 ])
+.controller('PlaylistDelete', ["$scope","$http", "CurrentUser", "$state", "$stateParams", "Playlists",($scope, $http, CurrentUser, $state, $stateParams, Playlists)->
+  $scope.playlist = {
+    name: ""
+  }
+
+  Playlists.get($stateParams.id).then (playlist)->
+    $scope.playlist = playlist
+
+  $scope.deletePlaylist = ->
+    CurrentUser.post('/api/playlist/'+$stateParams.id+'/delete', $scope.playlist)
+    .success (pl)->
+      $state.go('viewing.playlist.index')
+])
 .controller('PlaylistView', ["$scope","$http","$stateParams", "CurrentUser", "Playlists",($scope, $http, $stateParams, CurrentUser, Playlists)->
   $scope.playlist = {
     name: ""

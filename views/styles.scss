@@ -68,6 +68,13 @@ h6 {
   }
 }
 
+.avatar {
+  padding: 1px;
+  border: 1px solid rgb(213, 213, 213);
+  background: rgb(255, 255, 255);
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+}
+
 //Positioning
 
 #video {
@@ -228,6 +235,7 @@ $border: 1px solid #000;
     height: 100%;
     width: 100%;
     border: none;
+    padding: 5px;
   }
   ul {
     overflow-y: scroll;
@@ -247,11 +255,16 @@ $border: 1px solid #000;
       content: " >";
     }
   }
+  .avatar {
+    float: left;
+    max-height: 20px;
+    padding: 0px;
+  }
   .message {
     word-wrap: break-word;
     margin-bottom: 3px;
     &[data-type="userJoined"], &[data-type="userLeft"] {
-      .name {
+      .avatar, .name {
         display: none;
       }
       text-align: center;
@@ -383,4 +396,20 @@ ul.playlist-list {
     font-size: 2em;
   }
 
+}
+
+
+.user-list {
+  margin-bottom: 0px;
+  .name {
+    display: inline-block;
+    line-height: 50px;
+  }
+  .avatar {
+    max-height: 50px;
+  }
+}
+
+.anonymous-users {
+  text-align: left;
 }

@@ -5,6 +5,7 @@
   #chat{:'ng-controller' => "Chat"}
     %ul{:'chat-window' => true, :messages => 'chatMessages.messages'}
       %li.message.clearfix{:'ng-repeat' => 'message in chatMessages.messages', :'data-type' => '{{message.type}}'}
+        %img.avatar{:'ng-src' => 'https://worldofequestria.com/uploads/profile/photo-thumb-{{message.user.external_id}}.png'}
         .name<
           {{message.user.name}}
         .message

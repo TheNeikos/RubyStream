@@ -60,6 +60,11 @@ angular.module("RubyStream", ['ui.router', 'ui.bootstrap','ui.sortable','RubyStr
     templateUrl: '/view/playlist_edit'
     controller: 'PlaylistEdit'
   }) 
+  .state('viewing.playlist.delete', {
+    url: ':id/delete'
+    templateUrl: '/view/playlist_delete'
+    controller: 'PlaylistDelete'
+  }) 
   .state('viewing.playlist.view', {
     url: ':id'
     templateUrl: '/view/playlist_view'

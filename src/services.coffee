@@ -59,7 +59,7 @@ angular.module("RubyStream.Services",[])
 
   funcs.all = ->
     deferred = $q.defer()
-    unless funcs.playlists.length > 0
+    unless false # funcs.playlists.length > 0
       $http.get('/api/playlists')
       .success((data)->
         funcs.playlists = data
@@ -105,9 +105,9 @@ angular.module("RubyStream.Services",[])
   socket = new WebSocket('ws://'+window.location.host+ '/websocket')
 
   socket.onopen = ->
-    console.info("Opened")
+    $rootScope.websocket_connected = true
   socket.onclose = ->
-    console.info("Closed")
+    $rootScope.websocket_connected = false
   socket.onmessage = (data)->
     $rootScope.$apply ->
       data = JSON.parse data.data

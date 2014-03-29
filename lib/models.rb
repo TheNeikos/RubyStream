@@ -29,7 +29,7 @@ module RubyStream
 
     belongs_to :creator, 'User'
 
-    has n, :items, 'PlaylistItem'
+    has n, :items, 'PlaylistItem' , :constraint => :destroy
 
     def addYoutubeVideo(url, user)
       id = /v=([^"&?\/ ]{11})/.match(url)[1]

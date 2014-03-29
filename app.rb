@@ -51,7 +51,7 @@ def run(opts)
       EM.defer {
 
         pl = RubyStream::Playlist.first(:active => true)
-
+        next if pl.nil?
         pl.current_time =  pl.current_time + 1
 
         next if pl.items.length < 1
@@ -169,6 +169,20 @@ module RubyStream
         playlist = RubyStream::Playlist.get(params["id"])
         playlist.update(:name => user_creds["name"])
         playlist.serialize
+      rescue RubyStream::AuthError
+        status 403
+        body "You are not authorized"
+      end
+    end
+
+    post '/api/playlist/:id/delete' do
+      begin 
+        request.body.rewind
+        user_creds = JSON.parse request.body.read
+        user = RubyStream::User.auth(user_creds["user_id"], user_creds["user_authkey"])
+
+        playlist = RubyStream::Playlist.get(params["id"])
+        playlist.destroy.to_json
       rescue RubyStream::AuthError
         status 403
         body "You are not authorized"
